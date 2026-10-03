@@ -22,6 +22,7 @@ import { getErrorMessage } from "./errorHandler";
 function App() {
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("");
+  const [role, setRole] = useState("");
   const [freelancer, setFreelancer] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -49,6 +50,14 @@ function App() {
     setAccount(address);
     const balanceWei = await provider.getBalance(address);
     setBalance(ethers.formatEther(balanceWei));
+    const contract = await getContract();
+    const arbitrator = await contract.arbitrator();
+
+    if (address.toLowerCase() === arbitrator.toLowerCase()) {
+      setRole("arbitrator");
+    } else {
+      setRole("user");
+    }
   }
   async function createProject() {
     if (!account) {
@@ -198,12 +207,23 @@ function App() {
         "Disputed",
         "Dispute Resolved"
       ];
+      const arbitrator = await contract.arbitrator();
+
+      const projectRole =
+          account.toLowerCase() === arbitrator.toLowerCase()
+              ? "arbitrator"
+              : account.toLowerCase() === project[0].toLowerCase()
+                  ? "client"
+                  : account.toLowerCase() === project[1].toLowerCase()
+                      ? "freelancer"
+                      : "other";
       setProjectDetails({
         client: project[0],
         freelancer: project[1],
         amount: ethers.formatEther(project[2]),
         description: project[3],
-        status: statuses[Number(project[4])]
+        status: statuses[Number(project[4])],
+        role: projectRole
       });
     } catch (error) {
       console.error(error);
@@ -267,6 +287,12 @@ function App() {
               onConnect={connectWallet}
           />
         </div>
+
+        {account && role && (
+            <div className="wallet">
+              <strong>Role:</strong> {role}
+            </div>
+        )}
 
         {transactionStatus && (
             <div className="transaction-status">
@@ -341,15 +367,17 @@ function App() {
                 />
               </div>
 
-              <div className="card">
-                <ResolveDispute
-                    projectId={resolveProjectId}
-                    setProjectId={setResolveProjectId}
-                    resolution={resolution}
-                    setResolution={setResolution}
-                    onResolve={resolveDispute}
-                />
-              </div>
+              {role === "arbitrator" && (
+                  <div className="card">
+                    <ResolveDispute
+                        projectId={resolveProjectId}
+                        setProjectId={setResolveProjectId}
+                        resolution={resolution}
+                        setResolution={setResolution}
+                        onResolve={resolveDispute}
+                    />
+                  </div>
+              )}
 
             </div>
         )}

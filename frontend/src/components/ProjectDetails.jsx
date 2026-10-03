@@ -40,6 +40,11 @@ function ProjectDetails({ projectId, setProjectId, projectDetails, onView }) {
                             {projectDetails.status}
                         </span>
                     </div>
+
+                    <div className="detail-row">
+                        <span>Your Role</span>
+                        <span className="status-badge">{projectDetails.role}</span>
+                    </div>
                 </div>
             )}
         </>
