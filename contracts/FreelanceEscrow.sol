@@ -8,7 +8,9 @@ contract FreelanceEscrow {
         Funded,
         WorkSubmitted,
         Completed,
-        Refunded
+        Refunded,
+        Disputed,
+        DisputeResolved
     }
 
     struct Project {
@@ -19,6 +21,7 @@ contract FreelanceEscrow {
     }
 
     uint256 private projectCount;
+    address public arbitrator;
     mapping(uint256 => Project) public projects;
 
     event ProjectCreated(
@@ -47,6 +50,17 @@ contract FreelanceEscrow {
         uint256 amount
     );
 
+    event DisputeRaised(
+        uint256 indexed projectId,
+        address indexed raisedBy
+    );
+
+    event DisputeResolved(
+        uint256 indexed projectId,
+        bool freelancerWins,
+        uint256 amount
+    );
+
     modifier onlyClient(uint256 projectId) {
         require(
             msg.sender == projects[projectId].client,
@@ -63,15 +77,41 @@ contract FreelanceEscrow {
         _;
     }
 
-    constructor() {}
+    modifier onlyArbitrator() {
+        require(
+            msg.sender == arbitrator,
+            "Only arbitrator can perform this action"
+        );
+        _;
+    }
+
+    constructor(address _arbitrator) {
+        require(
+            _arbitrator != address(0),
+            "Invalid arbitrator"
+        );
+
+        arbitrator = _arbitrator;
+    }
 
     function createProject(
         address freelancer,
         uint256 amount
     ) external returns (uint256) {
-        require(freelancer != address(0), "Invalid freelancer");
-        require(freelancer != msg.sender, "Client and freelancer cannot be same");
-        require(amount > 0, "Amount must be greater than zero");
+        require(
+            freelancer != address(0),
+            "Invalid freelancer"
+        );
+
+        require(
+            freelancer != msg.sender,
+            "Client and freelancer cannot be same"
+        );
+
+        require(
+            amount > 0,
+            "Amount must be greater than zero"
+        );
 
         uint256 projectId = projectCount;
 
@@ -122,7 +162,10 @@ contract FreelanceEscrow {
 
         projects[projectId].status = ProjectStatus.Funded;
 
-        emit EscrowFunded(projectId, msg.value);
+        emit EscrowFunded(
+            projectId,
+            msg.value
+        );
     }
 
     function submitWork(
@@ -154,9 +197,15 @@ contract FreelanceEscrow {
                 value: project.amount
             }("");
 
-        require(success, "Payment failed");
+        require(
+            success,
+            "Payment failed"
+        );
 
-        emit PaymentReleased(projectId, project.amount);
+        emit PaymentReleased(
+            projectId,
+            project.amount
+        );
     }
 
     function refund(
@@ -175,9 +224,74 @@ contract FreelanceEscrow {
                 value: project.amount
             }("");
 
-        require(success, "Refund failed");
+        require(
+            success,
+            "Refund failed"
+        );
 
-        emit RefundIssued(projectId, project.amount);
+        emit RefundIssued(
+            projectId,
+            project.amount
+        );
+    }
+
+    function raiseDispute(
+        uint256 projectId
+    ) external {
+        require(
+            msg.sender == projects[projectId].client ||
+            msg.sender == projects[projectId].freelancer,
+            "Only project parties can raise dispute"
+        );
+
+        require(
+            projects[projectId].status == ProjectStatus.WorkSubmitted,
+            "Project is not ready for dispute"
+        );
+
+        projects[projectId].status = ProjectStatus.Disputed;
+
+        emit DisputeRaised(
+            projectId,
+            msg.sender
+        );
+    }
+
+    function resolveDispute(
+        uint256 projectId,
+        bool freelancerWins
+    ) external onlyArbitrator {
+        require(
+            projects[projectId].status == ProjectStatus.Disputed,
+            "Project is not disputed"
+        );
+
+        Project storage project = projects[projectId];
+
+        project.status = ProjectStatus.DisputeResolved;
+
+        address recipient;
+
+        if (freelancerWins) {
+            recipient = project.freelancer;
+        } else {
+            recipient = project.client;
+        }
+
+        (bool success, ) = payable(recipient).call{
+                value: project.amount
+            }("");
+
+        require(
+            success,
+            "Dispute payment failed"
+        );
+
+        emit DisputeResolved(
+            projectId,
+            freelancerWins,
+            project.amount
+        );
     }
 
     function getProject(
