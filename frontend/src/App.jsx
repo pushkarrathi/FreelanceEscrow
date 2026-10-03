@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./contract";
+import WalletConnection from "./components/WalletConnection";
+import AcceptProject from "./components/AcceptProject";
+import FundEscrow from "./components/FundEscrow";
+import SubmitWork from "./components/SubmitWork";
+import ApproveWork from "./components/ApproveWork";
+import ProjectDetails from "./components/ProjectDetails";
+import RaiseDispute from "./components/RaiseDispute";
+import ResolveDispute from "./components/ResolveDispute";
+import { getContract } from "./contractService";
 
 function App() {
   const [account, setAccount] = useState("");
@@ -31,7 +40,6 @@ function App() {
     const balanceWei = await provider.getBalance(address);
     setBalance(ethers.formatEther(balanceWei));
   }
-
   async function createProject() {
     if (!account) {
       alert("Connect MetaMask first");
@@ -42,13 +50,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-      );
+      const contract = await getContract();
       const tx = await contract.createProject(
           freelancer,
           ethers.parseEther(amount)
@@ -78,13 +80,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-      );
+      const contract = await getContract();
       const tx = await contract.acceptProject(acceptProjectId);
       await tx.wait();
       alert("Project accepted successfully");
@@ -99,13 +95,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-      );
+      const contract = await getContract();
       const tx = await contract.fundEscrow(fundProjectId, {
         value: ethers.parseEther(fundAmount)
       });
@@ -122,13 +112,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-      );
+      const contract = await getContract();
       const tx = await contract.submitWork(submitProjectId);
       await tx.wait();
       alert("Work submitted successfully");
@@ -143,13 +127,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-      );
+      const contract = await getContract();
       const tx = await contract.approveWork(approveProjectId);
       await tx.wait();
       alert("Work approved and payment released");
@@ -164,12 +142,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          provider
-      );
+      const contract = await getContract();
       const project = await contract.getProject(viewProjectId);
       const statuses = [
         "Created",
@@ -198,13 +171,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-      );
+      const contract = await getContract();
       const tx = await contract.raiseDispute(disputeProjectId);
       await tx.wait();
       alert("Dispute raised successfully");
@@ -219,13 +186,7 @@ function App() {
       return;
     }
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-      );
+      const contract = await getContract();
       const freelancerWins = resolution === "freelancer";
       const tx = await contract.resolveDispute(
           resolveProjectId,
@@ -243,15 +204,14 @@ function App() {
   return (
       <div>
         <h1>Freelance Escrow</h1>
-        <button onClick={connectWallet}>
-          Connect MetaMask
-        </button>
+        <WalletConnection
+            account={account}
+            balance={balance}
+            onConnect={connectWallet}
+        />
 
         {account && (
             <div>
-              <p>Connected Account:</p>
-              <p>{account}</p>
-              <p>Balance: {balance} ETH</p>
 
               <h2>Create Project</h2>
 
@@ -276,115 +236,54 @@ function App() {
               {projectId && (
                   <p>Created Project ID: {projectId}</p>
               )}
-              <h2>Accept Project</h2>
 
-              <input
-                  type="text"
-                  placeholder="Project ID"
-                  value={acceptProjectId}
-                  onChange={(e) => setAcceptProjectId(e.target.value)}
+              <AcceptProject
+                  projectId={acceptProjectId}
+                  setProjectId={setAcceptProjectId}
+                  onAccept={acceptProject}
               />
 
-              <button onClick={acceptProject}>
-                Accept Project
-              </button>
-              <h2>Fund Escrow</h2>
-
-              <input
-                  type="text"
-                  placeholder="Project ID"
-                  value={fundProjectId}
-                  onChange={(e) => setFundProjectId(e.target.value)}
+              <FundEscrow
+                  projectId={fundProjectId}
+                  setProjectId={setFundProjectId}
+                  amount={fundAmount}
+                  setAmount={setFundAmount}
+                  onFund={fundEscrow}
               />
 
-              <input
-                  type="text"
-                  placeholder="Amount in ETH"
-                  value={fundAmount}
-                  onChange={(e) => setFundAmount(e.target.value)}
+              <SubmitWork
+                  projectId={submitProjectId}
+                  setProjectId={setSubmitProjectId}
+                  onSubmit={submitWork}
               />
 
-              <button onClick={fundEscrow}>
-                Fund Escrow
-              </button>
-              <h2>Submit Work</h2>
-
-              <input
-                  type="text"
-                  placeholder="Project ID"
-                  value={submitProjectId}
-                  onChange={(e) => setSubmitProjectId(e.target.value)}
+              <ApproveWork
+                  projectId={approveProjectId}
+                  setProjectId={setApproveProjectId}
+                  onApprove={approveWork}
               />
 
-              <button onClick={submitWork}>
-                Submit Work
-              </button>
-              <h2>Approve Work</h2>
-
-              <input
-                  type="text"
-                  placeholder="Project ID"
-                  value={approveProjectId}
-                  onChange={(e) => setApproveProjectId(e.target.value)}
+              <ProjectDetails
+                  projectId={viewProjectId}
+                  setProjectId={setViewProjectId}
+                  projectDetails={projectDetails}
+                  onView={getProjectDetails}
               />
 
-              <button onClick={approveWork}>
-                Approve Work
-              </button>
-              <h2>Project Details</h2>
-
-              <input
-                  type="text"
-                  placeholder="Project ID"
-                  value={viewProjectId}
-                  onChange={(e) => setViewProjectId(e.target.value)}
+              <RaiseDispute
+                  projectId={disputeProjectId}
+                  setProjectId={setDisputeProjectId}
+                  onRaise={raiseDispute}
               />
 
-              <button onClick={getProjectDetails}>
-                View Project
-              </button>
-
-              {projectDetails && (
-                  <div>
-                    <p>Client: {projectDetails.client}</p>
-                    <p>Freelancer: {projectDetails.freelancer}</p>
-                    <p>Amount: {projectDetails.amount} ETH</p>
-                    <p>Status: {projectDetails.status}</p>
-                  </div>
-              )}
-              <h2>Raise Dispute</h2>
-
-              <input
-                  type="text"
-                  placeholder="Project ID"
-                  value={disputeProjectId}
-                  onChange={(e) => setDisputeProjectId(e.target.value)}
+              <ResolveDispute
+                  projectId={resolveProjectId}
+                  setProjectId={setResolveProjectId}
+                  resolution={resolution}
+                  setResolution={setResolution}
+                  onResolve={resolveDispute}
               />
 
-              <button onClick={raiseDispute}>
-                Raise Dispute
-              </button>
-              <h2>Resolve Dispute</h2>
-
-              <input
-                  type="text"
-                  placeholder="Project ID"
-                  value={resolveProjectId}
-                  onChange={(e) => setResolveProjectId(e.target.value)}
-              />
-
-              <select
-                  value={resolution}
-                  onChange={(e) => setResolution(e.target.value)}
-              >
-                <option value="">Select resolution</option>
-                <option value="freelancer">Freelancer wins</option>
-                <option value="client">Client wins</option>
-              </select>
-
-              <button onClick={resolveDispute}>
-                Resolve Dispute
-              </button>
             </div>
         )}
       </div>
