@@ -35,6 +35,7 @@ function App() {
   const [viewProjectId, setViewProjectId] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [projectDetails, setProjectDetails] = useState(null);
+  const [activityHistory, setActivityHistory] = useState([]);
   const [disputeProjectId, setDisputeProjectId] = useState("");
   const [resolveProjectId, setResolveProjectId] = useState("");
   const [resolution, setResolution] = useState("");
@@ -197,6 +198,7 @@ function App() {
     }
     try {
       setSelectedProjectId(viewProjectId);
+      await getActivityHistory(viewProjectId);
       const contract = await getContract();
       const project = await contract.getProject(viewProjectId);
       const statuses = [
@@ -230,6 +232,54 @@ function App() {
     } catch (error) {
       console.error(error);
       alert(getErrorMessage(error));
+    }
+  }
+  async function getActivityHistory(projectId) {
+    try {
+      const contract = await getContract();
+      const events = [];
+
+      events.push(...await contract.queryFilter(contract.filters.ProjectCreated()));
+      events.push(...await contract.queryFilter(contract.filters.ProjectAccepted()));
+      events.push(...await contract.queryFilter(contract.filters.EscrowFunded()));
+      events.push(...await contract.queryFilter(contract.filters.WorkSubmitted()));
+      events.push(...await contract.queryFilter(contract.filters.PaymentReleased()));
+      events.push(...await contract.queryFilter(contract.filters.RefundIssued()));
+      events.push(...await contract.queryFilter(contract.filters.DisputeRaised()));
+      events.push(...await contract.queryFilter(contract.filters.DisputeResolved()));      const activities = [];
+
+      for (const event of events) {
+        if (!event.args || event.args.projectId === undefined) {
+          continue;
+        }
+        if (event.args.projectId.toString() !== projectId.toString()) {
+          continue;
+        }
+        const eventNames = {
+          ProjectCreated: "Project Created",
+          ProjectAccepted: "Project Accepted",
+          EscrowFunded: "Escrow Funded",
+          WorkSubmitted: "Work Submitted",
+          PaymentReleased: "Payment Released",
+          RefundIssued: "Refund Issued",
+          DisputeRaised: "Dispute Raised",
+          DisputeResolved: "Dispute Resolved"
+        };
+
+        const block = await event.getBlock();
+
+        activities.push({
+          name: eventNames[event.fragment?.name] || "Unknown Event",
+          blockNumber: event.blockNumber,
+          timestamp: block.timestamp
+        });
+      }
+
+      activities.sort((a, b) => a.blockNumber - b.blockNumber);
+      setActivityHistory(activities);
+    } catch (error) {
+      console.error(error);
+      setActivityHistory([]);
     }
   }
   async function raiseDispute() {
@@ -365,6 +415,7 @@ function App() {
                     projectId={viewProjectId}
                     setProjectId={setViewProjectId}
                     projectDetails={projectDetails}
+                    activityHistory={activityHistory}
                     onView={getProjectDetails}
                 />
               </div>

@@ -1,4 +1,4 @@
-function ProjectDetails({ projectId, setProjectId, projectDetails, onView }) {
+function ProjectDetails({ projectId, setProjectId, projectDetails, activityHistory, onView }) {
     return (
         <>
             <h2>Project Details</h2>
@@ -45,6 +45,20 @@ function ProjectDetails({ projectId, setProjectId, projectDetails, onView }) {
                         <span>Your Role</span>
                         <span className="status-badge">{projectDetails.role}</span>
                     </div>
+
+                    {projectDetails && activityHistory.length > 0 && (
+                        <div className="project-details">
+                            <h3>Activity History</h3>
+                            {activityHistory.map((activity, index) => (
+                                <div className="detail-row" key={index}>
+                                    <span>{activity.name}</span>
+                                    <span>
+        Block {activity.blockNumber} — {new Date(Number(activity.timestamp) * 1000).toLocaleString()}
+    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </>
