@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ethers } from "ethers";
+import "./App.css";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./contract";
 import WalletConnection from "./components/WalletConnection";
 import AcceptProject from "./components/AcceptProject";
@@ -10,6 +11,7 @@ import ProjectDetails from "./components/ProjectDetails";
 import RaiseDispute from "./components/RaiseDispute";
 import ResolveDispute from "./components/ResolveDispute";
 import { getContract } from "./contractService";
+import CreateProject from "./components/CreateProject";
 
 function App() {
   const [account, setAccount] = useState("");
@@ -202,87 +204,93 @@ function App() {
 
 
   return (
-      <div>
-        <h1>Freelance Escrow</h1>
-        <WalletConnection
-            account={account}
-            balance={balance}
-            onConnect={connectWallet}
-        />
+      <div className="app">
+        <div className="header">
+          <h1>Freelance Escrow</h1>
+        </div>
+
+        <div className="wallet">
+          <WalletConnection
+              account={account}
+              balance={balance}
+              onConnect={connectWallet}
+          />
+        </div>
 
         {account && (
-            <div>
+            <div className="dashboard">
 
-              <h2>Create Project</h2>
+              <div className="card">
+                <CreateProject
+                    freelancer={freelancer}
+                    setFreelancer={setFreelancer}
+                    amount={amount}
+                    setAmount={setAmount}
+                    projectId={projectId}
+                    onCreate={createProject}
+                />
+              </div>
 
-              <input
-                  type="text"
-                  placeholder="Freelancer wallet address"
-                  value={freelancer}
-                  onChange={(e) => setFreelancer(e.target.value)}
-              />
+              <div className="card">
+                <AcceptProject
+                    projectId={acceptProjectId}
+                    setProjectId={setAcceptProjectId}
+                    onAccept={acceptProject}
+                />
+              </div>
 
-              <input
-                  type="text"
-                  placeholder="Amount in ETH"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-              />
+              <div className="card">
+                <FundEscrow
+                    projectId={fundProjectId}
+                    setProjectId={setFundProjectId}
+                    amount={fundAmount}
+                    setAmount={setFundAmount}
+                    onFund={fundEscrow}
+                />
+              </div>
 
-              <button onClick={createProject}>
-                Create Project
-              </button>
+              <div className="card">
+                <SubmitWork
+                    projectId={submitProjectId}
+                    setProjectId={setSubmitProjectId}
+                    onSubmit={submitWork}
+                />
+              </div>
 
-              {projectId && (
-                  <p>Created Project ID: {projectId}</p>
-              )}
+              <div className="card">
+                <ApproveWork
+                    projectId={approveProjectId}
+                    setProjectId={setApproveProjectId}
+                    onApprove={approveWork}
+                />
+              </div>
 
-              <AcceptProject
-                  projectId={acceptProjectId}
-                  setProjectId={setAcceptProjectId}
-                  onAccept={acceptProject}
-              />
+              <div className="card">
+                <ProjectDetails
+                    projectId={viewProjectId}
+                    setProjectId={setViewProjectId}
+                    projectDetails={projectDetails}
+                    onView={getProjectDetails}
+                />
+              </div>
 
-              <FundEscrow
-                  projectId={fundProjectId}
-                  setProjectId={setFundProjectId}
-                  amount={fundAmount}
-                  setAmount={setFundAmount}
-                  onFund={fundEscrow}
-              />
+              <div className="card">
+                <RaiseDispute
+                    projectId={disputeProjectId}
+                    setProjectId={setDisputeProjectId}
+                    onRaise={raiseDispute}
+                />
+              </div>
 
-              <SubmitWork
-                  projectId={submitProjectId}
-                  setProjectId={setSubmitProjectId}
-                  onSubmit={submitWork}
-              />
-
-              <ApproveWork
-                  projectId={approveProjectId}
-                  setProjectId={setApproveProjectId}
-                  onApprove={approveWork}
-              />
-
-              <ProjectDetails
-                  projectId={viewProjectId}
-                  setProjectId={setViewProjectId}
-                  projectDetails={projectDetails}
-                  onView={getProjectDetails}
-              />
-
-              <RaiseDispute
-                  projectId={disputeProjectId}
-                  setProjectId={setDisputeProjectId}
-                  onRaise={raiseDispute}
-              />
-
-              <ResolveDispute
-                  projectId={resolveProjectId}
-                  setProjectId={setResolveProjectId}
-                  resolution={resolution}
-                  setResolution={setResolution}
-                  onResolve={resolveDispute}
-              />
+              <div className="card">
+                <ResolveDispute
+                    projectId={resolveProjectId}
+                    setProjectId={setResolveProjectId}
+                    resolution={resolution}
+                    setResolution={setResolution}
+                    onResolve={resolveDispute}
+                />
+              </div>
 
             </div>
         )}
