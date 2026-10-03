@@ -15,33 +15,33 @@ describe("FreelanceEscrow", function () {
         const { escrow, client, freelancer } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
 
         const project = await escrow.getProject(0);
 
         expect(project[0]).to.equal(client.address);
         expect(project[1]).to.equal(freelancer.address);
         expect(project[2]).to.equal(amount);
-        expect(project[3]).to.equal(0);
+        expect(project[4]).to.equal(0);
     });
 
     it("should allow freelancer to accept the project", async function () {
         const { escrow, freelancer } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
 
         const project = await escrow.getProject(0);
 
-        expect(project[3]).to.equal(1);
+        expect(project[4]).to.equal(1);
     });
 
     it("should allow client to fund the escrow", async function () {
         const { escrow, client, freelancer } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -56,7 +56,7 @@ describe("FreelanceEscrow", function () {
         const { escrow, client, freelancer } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -77,14 +77,14 @@ describe("FreelanceEscrow", function () {
 
         const project = await escrow.getProject(0);
 
-        expect(project[3]).to.equal(4);
+        expect(project[4]).to.equal(4);
     });
 
     it("should allow the client to receive a refund", async function () {
         const { escrow, client, freelancer } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -107,7 +107,7 @@ describe("FreelanceEscrow", function () {
 
         const project = await escrow.getProject(0);
 
-        expect(project[3]).to.equal(5);
+        expect(project[4]).to.equal(5);
     });
 
     it("should reject incorrect funding amount", async function () {
@@ -115,7 +115,7 @@ describe("FreelanceEscrow", function () {
         const amount = ethers.parseEther("0.1");
         const wrongAmount = ethers.parseEther("0.05");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
 
         await expect(
@@ -129,7 +129,7 @@ describe("FreelanceEscrow", function () {
         const { escrow, client, freelancer, other } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -145,7 +145,7 @@ describe("FreelanceEscrow", function () {
         const { escrow, client, freelancer } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -156,14 +156,14 @@ describe("FreelanceEscrow", function () {
 
         const project = await escrow.getProject(0);
 
-        expect(project[3]).to.equal(6);
+        expect(project[4]).to.equal(6);
     });
 
     it("should allow the freelancer to raise a dispute", async function () {
         const { escrow, client, freelancer } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -174,14 +174,14 @@ describe("FreelanceEscrow", function () {
 
         const project = await escrow.getProject(0);
 
-        expect(project[3]).to.equal(6);
+        expect(project[4]).to.equal(6);
     });
 
     it("should prevent another user from raising a dispute", async function () {
         const { escrow, client, freelancer, other } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -197,7 +197,7 @@ describe("FreelanceEscrow", function () {
         const { escrow, client, freelancer, arbitrator } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -219,14 +219,14 @@ describe("FreelanceEscrow", function () {
 
         const project = await escrow.getProject(0);
 
-        expect(project[3]).to.equal(7);
+        expect(project[4]).to.equal(7);
     });
 
     it("should allow arbitrator to resolve dispute in favor of client", async function () {
         const { escrow, client, freelancer, arbitrator } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -248,14 +248,14 @@ describe("FreelanceEscrow", function () {
 
         const project = await escrow.getProject(0);
 
-        expect(project[3]).to.equal(7);
+        expect(project[4]).to.equal(7);
     });
 
     it("should prevent non-arbitrator from resolving a dispute", async function () {
         const { escrow, client, freelancer, other } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount
@@ -272,7 +272,7 @@ describe("FreelanceEscrow", function () {
         const { escrow, client, freelancer, arbitrator } = await deployContract();
         const amount = ethers.parseEther("0.1");
 
-        await escrow.createProject(freelancer.address, amount);
+        await escrow.createProject(freelancer.address, amount,"Website development project");
         await escrow.connect(freelancer).acceptProject(0);
         await escrow.connect(client).fundEscrow(0, {
             value: amount

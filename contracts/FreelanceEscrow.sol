@@ -17,6 +17,7 @@ contract FreelanceEscrow {
         address client;
         address freelancer;
         uint256 amount;
+        string description;
         ProjectStatus status;
     }
 
@@ -28,7 +29,8 @@ contract FreelanceEscrow {
         uint256 indexed projectId,
         address indexed client,
         address indexed freelancer,
-        uint256 amount
+        uint256 amount,
+        string description
     );
 
     event ProjectAccepted(uint256 indexed projectId);
@@ -96,41 +98,23 @@ contract FreelanceEscrow {
 
     function createProject(
         address freelancer,
-        uint256 amount
+        uint256 amount,
+        string calldata description
     ) external returns (uint256) {
-        require(
-            freelancer != address(0),
-            "Invalid freelancer"
-        );
-
-        require(
-            freelancer != msg.sender,
-            "Client and freelancer cannot be same"
-        );
-
-        require(
-            amount > 0,
-            "Amount must be greater than zero"
-        );
-
+        require(freelancer != address(0), "Invalid freelancer");
+        require(freelancer != msg.sender, "Client and freelancer cannot be same");
+        require(amount > 0, "Amount must be greater than zero");
+        require(bytes(description).length > 0, "Description cannot be empty");
         uint256 projectId = projectCount;
-
         projects[projectId] = Project({
             client: msg.sender,
             freelancer: freelancer,
             amount: amount,
+            description: description,
             status: ProjectStatus.Created
         });
-
         projectCount++;
-
-        emit ProjectCreated(
-            projectId,
-            msg.sender,
-            freelancer,
-            amount
-        );
-
+        emit ProjectCreated(projectId, msg.sender, freelancer, amount, description);
         return projectId;
     }
 
@@ -294,20 +278,19 @@ contract FreelanceEscrow {
         );
     }
 
-    function getProject(
-        uint256 projectId
-    ) external view returns (
+    function getProject(uint256 projectId) external view returns (
         address client,
         address freelancer,
         uint256 amount,
+        string memory description,
         ProjectStatus status
     ) {
         Project memory project = projects[projectId];
-
         return (
             project.client,
             project.freelancer,
             project.amount,
+            project.description,
             project.status
         );
     }

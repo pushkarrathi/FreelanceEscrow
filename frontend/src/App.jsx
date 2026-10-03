@@ -24,6 +24,7 @@ function App() {
   const [balance, setBalance] = useState("");
   const [freelancer, setFreelancer] = useState("");
   const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
   const [projectId, setProjectId] = useState("");
   const [acceptProjectId, setAcceptProjectId] = useState("");
   const [fundProjectId, setFundProjectId] = useState("");
@@ -54,8 +55,8 @@ function App() {
       alert("Connect MetaMask first");
       return;
     }
-    if (!freelancer || !amount) {
-      alert("Enter freelancer address and amount");
+    if (!freelancer || !amount || !description) {
+      alert("Enter freelancer address, amount and description");
       return;
     }
     if (!isValidAddress(freelancer)) {
@@ -72,7 +73,8 @@ function App() {
       setTransactionStatus("Waiting for MetaMask approval...");
       const tx = await contract.createProject(
           freelancer,
-          ethers.parseEther(amount)
+          ethers.parseEther(amount),
+          description
       );
       setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       const receipt = await tx.wait();
@@ -200,7 +202,8 @@ function App() {
         client: project[0],
         freelancer: project[1],
         amount: ethers.formatEther(project[2]),
-        status: statuses[Number(project[3])]
+        description: project[3],
+        status: statuses[Number(project[4])]
       });
     } catch (error) {
       console.error(error);
@@ -280,6 +283,8 @@ function App() {
                     setFreelancer={setFreelancer}
                     amount={amount}
                     setAmount={setAmount}
+                    description={description}
+                    setDescription={setDescription}
                     projectId={projectId}
                     onCreate={createProject}
                 />

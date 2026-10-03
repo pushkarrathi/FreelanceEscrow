@@ -30,6 +30,11 @@ function ProjectDetails({ projectId, setProjectId, projectDetails, onView }) {
                     </div>
 
                     <div className="detail-row">
+                        <span>Description</span>
+                        <span>{projectDetails.description}</span>
+                    </div>
+
+                    <div className="detail-row">
                         <span>Status</span>
                         <span className="status-badge">
                             {projectDetails.status}

@@ -1,4 +1,4 @@
-function CreateProject({ freelancer, setFreelancer, amount, setAmount, projectId, onCreate }) {
+function CreateProject({ freelancer, setFreelancer, amount, setAmount, description, setDescription, projectId, onCreate }) {
     return (
         <>
             <h2>Create Project</h2>
@@ -13,6 +13,12 @@ function CreateProject({ freelancer, setFreelancer, amount, setAmount, projectId
                 placeholder="Amount in ETH"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+            />
+            <input
+                type="text"
+                placeholder="Project description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
             />
             <button onClick={onCreate}>
                 Create Project
