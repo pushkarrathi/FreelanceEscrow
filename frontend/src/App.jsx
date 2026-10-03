@@ -30,6 +30,7 @@ function App() {
   const [disputeProjectId, setDisputeProjectId] = useState("");
   const [resolveProjectId, setResolveProjectId] = useState("");
   const [resolution, setResolution] = useState("");
+  const [transactionStatus, setTransactionStatus] = useState("");
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -54,11 +55,14 @@ function App() {
     }
     try {
       const contract = await getContract();
+      setTransactionStatus("Waiting for MetaMask approval...");
       const tx = await contract.createProject(
           freelancer,
           ethers.parseEther(amount)
       );
+      setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       const receipt = await tx.wait();
+      setTransactionStatus("Transaction successful");
       const event = receipt.logs
           .map((log) => {
             try {
@@ -74,6 +78,7 @@ function App() {
       alert("Project created successfully");
     } catch (error) {
       console.error(error);
+      setTransactionStatus("Transaction failed");
       alert(getErrorMessage(error));
     }
   }
@@ -84,11 +89,15 @@ function App() {
     }
     try {
       const contract = await getContract();
+      setTransactionStatus("Waiting for MetaMask approval...");
       const tx = await contract.acceptProject(acceptProjectId);
+      setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
+      setTransactionStatus("Transaction successful");
       alert("Project accepted successfully");
     } catch (error) {
       console.error(error);
+      setTransactionStatus("Transaction failed");
       alert(getErrorMessage(error));
     }
   }
@@ -99,13 +108,17 @@ function App() {
     }
     try {
       const contract = await getContract();
+      setTransactionStatus("Waiting for MetaMask approval...");
       const tx = await contract.fundEscrow(fundProjectId, {
         value: ethers.parseEther(fundAmount)
       });
+      setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
+      setTransactionStatus("Transaction successful");
       alert("Escrow funded successfully");
     } catch (error) {
       console.error(error);
+      setTransactionStatus("Transaction failed");
       alert(getErrorMessage(error));
     }
   }
@@ -116,11 +129,15 @@ function App() {
     }
     try {
       const contract = await getContract();
+      setTransactionStatus("Waiting for MetaMask approval...");
       const tx = await contract.submitWork(submitProjectId);
+      setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
+      setTransactionStatus("Transaction successful");
       alert("Work submitted successfully");
     } catch (error) {
       console.error(error);
+      setTransactionStatus("Transaction failed");
       alert(getErrorMessage(error));
     }
   }
@@ -131,11 +148,15 @@ function App() {
     }
     try {
       const contract = await getContract();
+      setTransactionStatus("Waiting for MetaMask approval...");
       const tx = await contract.approveWork(approveProjectId);
+      setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
+      setTransactionStatus("Transaction successful");
       alert("Work approved and payment released");
     } catch (error) {
       console.error(error);
+      setTransactionStatus("Transaction failed");
       alert(getErrorMessage(error));
     }
   }
@@ -175,11 +196,15 @@ function App() {
     }
     try {
       const contract = await getContract();
+      setTransactionStatus("Waiting for MetaMask approval...");
       const tx = await contract.raiseDispute(disputeProjectId);
+      setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
+      setTransactionStatus("Transaction successful");
       alert("Dispute raised successfully");
     } catch (error) {
       console.error(error);
+      setTransactionStatus("Transaction failed");
       alert(getErrorMessage(error));
     }
   }
@@ -190,15 +215,19 @@ function App() {
     }
     try {
       const contract = await getContract();
+      setTransactionStatus("Waiting for MetaMask approval...");
       const freelancerWins = resolution === "freelancer";
       const tx = await contract.resolveDispute(
           resolveProjectId,
           freelancerWins
       );
+      setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
+      setTransactionStatus("Transaction successful");
       alert("Dispute resolved successfully");
     } catch (error) {
       console.error(error);
+      setTransactionStatus("Transaction failed");
       alert(getErrorMessage(error));
     }
   }
@@ -217,6 +246,12 @@ function App() {
               onConnect={connectWallet}
           />
         </div>
+
+        {transactionStatus && (
+            <div className="transaction-status">
+              {transactionStatus}
+            </div>
+        )}
 
         {account && (
             <div className="dashboard">
