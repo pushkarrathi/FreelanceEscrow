@@ -13,6 +13,8 @@ function App() {
   const [fundAmount, setFundAmount] = useState("");
   const [submitProjectId, setSubmitProjectId] = useState("");
   const [approveProjectId, setApproveProjectId] = useState("");
+  const [viewProjectId, setViewProjectId] = useState("");
+  const [projectDetails, setProjectDetails] = useState(null);
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -153,6 +155,38 @@ function App() {
       alert("Transaction failed");
     }
   }
+  async function getProjectDetails() {
+    if (!viewProjectId) {
+      alert("Enter project ID");
+      return;
+    }
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          CONTRACT_ABI,
+          provider
+      );
+      const project = await contract.getProject(viewProjectId);
+      const statuses = [
+        "Created",
+        "Accepted",
+        "Funded",
+        "Work Submitted",
+        "Completed",
+        "Refunded"
+      ];
+      setProjectDetails({
+        client: project[0],
+        freelancer: project[1],
+        amount: ethers.formatEther(project[2]),
+        status: statuses[Number(project[3])]
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Unable to fetch project");
+    }
+  }
 
 
   return (
@@ -246,6 +280,27 @@ function App() {
               <button onClick={approveWork}>
                 Approve Work
               </button>
+              <h2>Project Details</h2>
+
+              <input
+                  type="text"
+                  placeholder="Project ID"
+                  value={viewProjectId}
+                  onChange={(e) => setViewProjectId(e.target.value)}
+              />
+
+              <button onClick={getProjectDetails}>
+                View Project
+              </button>
+
+              {projectDetails && (
+                  <div>
+                    <p>Client: {projectDetails.client}</p>
+                    <p>Freelancer: {projectDetails.freelancer}</p>
+                    <p>Amount: {projectDetails.amount} ETH</p>
+                    <p>Status: {projectDetails.status}</p>
+                  </div>
+              )}
             </div>
         )}
       </div>
