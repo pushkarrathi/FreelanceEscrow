@@ -33,6 +33,7 @@ function App() {
   const [submitProjectId, setSubmitProjectId] = useState("");
   const [approveProjectId, setApproveProjectId] = useState("");
   const [viewProjectId, setViewProjectId] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState("");
   const [projectDetails, setProjectDetails] = useState(null);
   const [disputeProjectId, setDisputeProjectId] = useState("");
   const [resolveProjectId, setResolveProjectId] = useState("");
@@ -108,14 +109,14 @@ function App() {
     }
   }
   async function acceptProject() {
-    if (!isValidProjectId(acceptProjectId)) {
+    if (!isValidProjectId(selectedProjectId)) {
       alert("Enter a valid project ID");
       return;
     }
     try {
       const contract = await getContract();
       setTransactionStatus("Waiting for MetaMask approval...");
-      const tx = await contract.acceptProject(acceptProjectId);
+      const tx = await contract.acceptProject(selectedProjectId);
       setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
       setTransactionStatus("Transaction successful");
@@ -127,7 +128,7 @@ function App() {
     }
   }
   async function fundEscrow() {
-    if (!isValidProjectId(fundProjectId)) {
+    if (!isValidProjectId(selectedProjectId)) {
       alert("Enter a valid project ID");
       return;
     }
@@ -138,7 +139,7 @@ function App() {
     try {
       const contract = await getContract();
       setTransactionStatus("Waiting for MetaMask approval...");
-      const tx = await contract.fundEscrow(fundProjectId, {
+      const tx = await contract.fundEscrow(selectedProjectId, {
         value: ethers.parseEther(fundAmount)
       });
       setTransactionStatus("Transaction submitted. Waiting for confirmation...");
@@ -152,14 +153,14 @@ function App() {
     }
   }
   async function submitWork() {
-    if (!isValidProjectId(submitProjectId)) {
+    if (!isValidProjectId(selectedProjectId)) {
       alert("Enter a valid project ID");
       return;
     }
     try {
       const contract = await getContract();
       setTransactionStatus("Waiting for MetaMask approval...");
-      const tx = await contract.submitWork(submitProjectId);
+      const tx = await contract.submitWork(selectedProjectId);
       setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
       setTransactionStatus("Transaction successful");
@@ -171,14 +172,14 @@ function App() {
     }
   }
   async function approveWork() {
-    if (!isValidProjectId(approveProjectId)) {
+    if (!isValidProjectId(selectedProjectId)) {
       alert("Enter a valid project ID");
       return;
     }
     try {
       const contract = await getContract();
       setTransactionStatus("Waiting for MetaMask approval...");
-      const tx = await contract.approveWork(approveProjectId);
+      const tx = await contract.approveWork(selectedProjectId);
       setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
       setTransactionStatus("Transaction successful");
@@ -195,6 +196,7 @@ function App() {
       return;
     }
     try {
+      setSelectedProjectId(viewProjectId);
       const contract = await getContract();
       const project = await contract.getProject(viewProjectId);
       const statuses = [
@@ -231,14 +233,14 @@ function App() {
     }
   }
   async function raiseDispute() {
-    if (!isValidProjectId(disputeProjectId)) {
+    if (!isValidProjectId(selectedProjectId)) {
       alert("Enter a valid project ID");
       return;
     }
     try {
       const contract = await getContract();
       setTransactionStatus("Waiting for MetaMask approval...");
-      const tx = await contract.raiseDispute(disputeProjectId);
+      const tx = await contract.raiseDispute(selectedProjectId);
       setTransactionStatus("Transaction submitted. Waiting for confirmation...");
       await tx.wait();
       setTransactionStatus("Transaction successful");
@@ -316,39 +318,47 @@ function App() {
                 />
               </div>
 
-              <div className="card">
-                <AcceptProject
-                    projectId={acceptProjectId}
-                    setProjectId={setAcceptProjectId}
-                    onAccept={acceptProject}
-                />
-              </div>
+              {projectDetails?.role === "freelancer" && projectDetails?.status === "Created" && (
+                  <div className="card">
+                    <AcceptProject
+                        projectId={selectedProjectId}
+                        setProjectId={setSelectedProjectId}
+                        onAccept={acceptProject}
+                    />
+                  </div>
+              )}
 
-              <div className="card">
-                <FundEscrow
-                    projectId={fundProjectId}
-                    setProjectId={setFundProjectId}
-                    amount={fundAmount}
-                    setAmount={setFundAmount}
-                    onFund={fundEscrow}
-                />
-              </div>
+              {projectDetails?.role === "client" && projectDetails?.status === "Accepted" && (
+                  <div className="card">
+                    <FundEscrow
+                        projectId={selectedProjectId}
+                        setProjectId={setSelectedProjectId}
+                        amount={fundAmount}
+                        setAmount={setFundAmount}
+                        onFund={fundEscrow}
+                    />
+                  </div>
+              )}
 
-              <div className="card">
-                <SubmitWork
-                    projectId={submitProjectId}
-                    setProjectId={setSubmitProjectId}
-                    onSubmit={submitWork}
-                />
-              </div>
+              {projectDetails?.role === "freelancer" && projectDetails?.status === "Funded" && (
+                  <div className="card">
+                    <SubmitWork
+                        projectId={selectedProjectId}
+                        setProjectId={setSelectedProjectId}
+                        onSubmit={submitWork}
+                    />
+                  </div>
+              )}
 
-              <div className="card">
-                <ApproveWork
-                    projectId={approveProjectId}
-                    setProjectId={setApproveProjectId}
-                    onApprove={approveWork}
-                />
-              </div>
+              {projectDetails?.role === "client" && projectDetails?.status === "Work Submitted" && (
+                  <div className="card">
+                    <ApproveWork
+                        projectId={selectedProjectId}
+                        setProjectId={setSelectedProjectId}
+                        onApprove={approveWork}
+                    />
+                  </div>
+              )}
 
               <div className="card">
                 <ProjectDetails
@@ -359,13 +369,16 @@ function App() {
                 />
               </div>
 
-              <div className="card">
-                <RaiseDispute
-                    projectId={disputeProjectId}
-                    setProjectId={setDisputeProjectId}
-                    onRaise={raiseDispute}
-                />
-              </div>
+              {(projectDetails?.role === "client" || projectDetails?.role === "freelancer") &&
+                  projectDetails?.status === "Work Submitted" && (
+                  <div className="card">
+                    <RaiseDispute
+                        projectId={selectedProjectId}
+                        setProjectId={setDisputeProjectId}
+                        onRaise={raiseDispute}
+                    />
+                  </div>
+              )}
 
               {role === "arbitrator" && (
                   <div className="card">
