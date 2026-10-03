@@ -12,6 +12,7 @@ import RaiseDispute from "./components/RaiseDispute";
 import ResolveDispute from "./components/ResolveDispute";
 import { getContract } from "./contractService";
 import CreateProject from "./components/CreateProject";
+import { getErrorMessage } from "./errorHandler";
 
 function App() {
   const [account, setAccount] = useState("");
@@ -73,7 +74,7 @@ function App() {
       alert("Project created successfully");
     } catch (error) {
       console.error(error);
-      alert("Transaction failed");
+      alert(getErrorMessage(error));
     }
   }
   async function acceptProject() {
@@ -88,7 +89,7 @@ function App() {
       alert("Project accepted successfully");
     } catch (error) {
       console.error(error);
-      alert("Transaction failed");
+      alert(getErrorMessage(error));
     }
   }
   async function fundEscrow() {
@@ -105,7 +106,7 @@ function App() {
       alert("Escrow funded successfully");
     } catch (error) {
       console.error(error);
-      alert("Transaction failed");
+      alert(getErrorMessage(error));
     }
   }
   async function submitWork() {
@@ -120,7 +121,7 @@ function App() {
       alert("Work submitted successfully");
     } catch (error) {
       console.error(error);
-      alert("Transaction failed");
+      alert(getErrorMessage(error));
     }
   }
   async function approveWork() {
@@ -135,7 +136,7 @@ function App() {
       alert("Work approved and payment released");
     } catch (error) {
       console.error(error);
-      alert("Transaction failed");
+      alert(getErrorMessage(error));
     }
   }
   async function getProjectDetails() {
@@ -164,7 +165,7 @@ function App() {
       });
     } catch (error) {
       console.error(error);
-      alert("Unable to fetch project");
+      alert(getErrorMessage(error));
     }
   }
   async function raiseDispute() {
@@ -179,7 +180,7 @@ function App() {
       alert("Dispute raised successfully");
     } catch (error) {
       console.error(error);
-      alert("Transaction failed");
+      alert(getErrorMessage(error));
     }
   }
   async function resolveDispute() {
@@ -198,7 +199,7 @@ function App() {
       alert("Dispute resolved successfully");
     } catch (error) {
       console.error(error);
-      alert("Transaction failed");
+      alert(getErrorMessage(error));
     }
   }
 
