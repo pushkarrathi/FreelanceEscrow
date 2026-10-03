@@ -1,6 +1,6 @@
 function ProjectDetails({ projectId, setProjectId, projectDetails, onView }) {
     return (
-        <section>
+        <>
             <h2>Project Details</h2>
             <input
                 type="text"
@@ -11,15 +11,33 @@ function ProjectDetails({ projectId, setProjectId, projectDetails, onView }) {
             <button onClick={onView}>
                 View Project
             </button>
+
             {projectDetails && (
-                <div>
-                    <p>Client: {projectDetails.client}</p>
-                    <p>Freelancer: {projectDetails.freelancer}</p>
-                    <p>Amount: {projectDetails.amount} ETH</p>
-                    <p>Status: {projectDetails.status}</p>
+                <div className="project-details">
+                    <div className="detail-row">
+                        <span>Client</span>
+                        <span>{projectDetails.client}</span>
+                    </div>
+
+                    <div className="detail-row">
+                        <span>Freelancer</span>
+                        <span>{projectDetails.freelancer}</span>
+                    </div>
+
+                    <div className="detail-row">
+                        <span>Amount</span>
+                        <span>{projectDetails.amount} ETH</span>
+                    </div>
+
+                    <div className="detail-row">
+                        <span>Status</span>
+                        <span className="status-badge">
+                            {projectDetails.status}
+                        </span>
+                    </div>
                 </div>
             )}
-        </section>
+        </>
     );
 }
 

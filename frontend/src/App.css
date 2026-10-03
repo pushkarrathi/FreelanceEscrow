@@ -84,6 +84,7 @@ button:hover {
     padding: 15px;
   }
 }
+
 .transaction-status {
   background: white;
   padding: 15px 20px;
@@ -91,4 +92,36 @@ button:hover {
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   font-weight: 600;
+}
+
+.project-details {
+  margin-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 15px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.detail-row span:first-child {
+  font-weight: 600;
+}
+
+.detail-row span:last-child {
+  text-align: right;
+  word-break: break-all;
+}
+
+.status-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  word-break: normal !important;
 }
