@@ -15,6 +15,9 @@ function App() {
   const [approveProjectId, setApproveProjectId] = useState("");
   const [viewProjectId, setViewProjectId] = useState("");
   const [projectDetails, setProjectDetails] = useState(null);
+  const [disputeProjectId, setDisputeProjectId] = useState("");
+  const [resolveProjectId, setResolveProjectId] = useState("");
+  const [resolution, setResolution] = useState("");
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -174,7 +177,9 @@ function App() {
         "Funded",
         "Work Submitted",
         "Completed",
-        "Refunded"
+        "Refunded",
+        "Disputed",
+        "Dispute Resolved"
       ];
       setProjectDetails({
         client: project[0],
@@ -185,6 +190,52 @@ function App() {
     } catch (error) {
       console.error(error);
       alert("Unable to fetch project");
+    }
+  }
+  async function raiseDispute() {
+    if (!disputeProjectId) {
+      alert("Enter project ID");
+      return;
+    }
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          CONTRACT_ABI,
+          signer
+      );
+      const tx = await contract.raiseDispute(disputeProjectId);
+      await tx.wait();
+      alert("Dispute raised successfully");
+    } catch (error) {
+      console.error(error);
+      alert("Transaction failed");
+    }
+  }
+  async function resolveDispute() {
+    if (!resolveProjectId || !resolution) {
+      alert("Enter project ID and resolution");
+      return;
+    }
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          CONTRACT_ABI,
+          signer
+      );
+      const freelancerWins = resolution === "freelancer";
+      const tx = await contract.resolveDispute(
+          resolveProjectId,
+          freelancerWins
+      );
+      await tx.wait();
+      alert("Dispute resolved successfully");
+    } catch (error) {
+      console.error(error);
+      alert("Transaction failed");
     }
   }
 
@@ -301,6 +352,39 @@ function App() {
                     <p>Status: {projectDetails.status}</p>
                   </div>
               )}
+              <h2>Raise Dispute</h2>
+
+              <input
+                  type="text"
+                  placeholder="Project ID"
+                  value={disputeProjectId}
+                  onChange={(e) => setDisputeProjectId(e.target.value)}
+              />
+
+              <button onClick={raiseDispute}>
+                Raise Dispute
+              </button>
+              <h2>Resolve Dispute</h2>
+
+              <input
+                  type="text"
+                  placeholder="Project ID"
+                  value={resolveProjectId}
+                  onChange={(e) => setResolveProjectId(e.target.value)}
+              />
+
+              <select
+                  value={resolution}
+                  onChange={(e) => setResolution(e.target.value)}
+              >
+                <option value="">Select resolution</option>
+                <option value="freelancer">Freelancer wins</option>
+                <option value="client">Client wins</option>
+              </select>
+
+              <button onClick={resolveDispute}>
+                Resolve Dispute
+              </button>
             </div>
         )}
       </div>
