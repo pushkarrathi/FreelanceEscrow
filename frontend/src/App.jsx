@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import "./App.css";
+import {
+  isValidAddress,
+  isValidAmount,
+  isValidProjectId
+} from "./validation";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./contract";
 import WalletConnection from "./components/WalletConnection";
 import AcceptProject from "./components/AcceptProject";
@@ -53,6 +58,15 @@ function App() {
       alert("Enter freelancer address and amount");
       return;
     }
+    if (!isValidAddress(freelancer)) {
+      alert("Enter a valid Ethereum wallet address");
+      return;
+    }
+
+    if (!isValidAmount(amount)) {
+      alert("Enter a valid ETH amount greater than zero");
+      return;
+    }
     try {
       const contract = await getContract();
       setTransactionStatus("Waiting for MetaMask approval...");
@@ -83,8 +97,8 @@ function App() {
     }
   }
   async function acceptProject() {
-    if (!acceptProjectId) {
-      alert("Enter project ID");
+    if (!isValidProjectId(acceptProjectId)) {
+      alert("Enter a valid project ID");
       return;
     }
     try {
@@ -102,8 +116,12 @@ function App() {
     }
   }
   async function fundEscrow() {
-    if (!fundProjectId || !fundAmount) {
-      alert("Enter project ID and amount");
+    if (!isValidProjectId(fundProjectId)) {
+      alert("Enter a valid project ID");
+      return;
+    }
+    if (!isValidAmount(fundAmount)) {
+      alert("Enter a valid ETH amount greater than zero");
       return;
     }
     try {
@@ -123,8 +141,8 @@ function App() {
     }
   }
   async function submitWork() {
-    if (!submitProjectId) {
-      alert("Enter project ID");
+    if (!isValidProjectId(submitProjectId)) {
+      alert("Enter a valid project ID");
       return;
     }
     try {
@@ -142,8 +160,8 @@ function App() {
     }
   }
   async function approveWork() {
-    if (!approveProjectId) {
-      alert("Enter project ID");
+    if (!isValidProjectId(approveProjectId)) {
+      alert("Enter a valid project ID");
       return;
     }
     try {
@@ -161,8 +179,8 @@ function App() {
     }
   }
   async function getProjectDetails() {
-    if (!viewProjectId) {
-      alert("Enter project ID");
+    if (!isValidProjectId(viewProjectId)) {
+      alert("Enter a valid project ID");
       return;
     }
     try {
@@ -190,8 +208,8 @@ function App() {
     }
   }
   async function raiseDispute() {
-    if (!disputeProjectId) {
-      alert("Enter project ID");
+    if (!isValidProjectId(disputeProjectId)) {
+      alert("Enter a valid project ID");
       return;
     }
     try {
@@ -209,8 +227,8 @@ function App() {
     }
   }
   async function resolveDispute() {
-    if (!resolveProjectId || !resolution) {
-      alert("Enter project ID and resolution");
+    if (!isValidProjectId(resolveProjectId) || !resolution) {
+      alert("Enter a valid project ID and resolution");
       return;
     }
     try {
